@@ -1,0 +1,384 @@
+<?xml version="1.0"?>
+<!--
+  jackal_sim.urdf
+  Jackal 유사 로봇. jackal_description 패키지 없이 Gazebo 에서 동작.
+  센서: 2D LiDAR (/scan), RGB Camera (/camera/color/image_raw)
+  구동: 차동 구동 (libgazebo_ros_diff_drive.so)
+
+  ├─ base_link          (로봇 본체 중심, 지면에서 0.13m)
+  │   ├─ left_wheel     (y=+0.2175, z=-0.032)
+  │   ├─ right_wheel    (y=-0.2175, z=-0.032)
+  │   ├─ front_caster   (x=+0.22,  z=-0.092)
+  │   ├─ rear_caster    (x=-0.22,  z=-0.092)
+  │   ├─ laser          (x=+0.18,  z=+0.109)  → /scan
+  │   └─ camera_link    (x=+0.24,  z=+0.10, pitch=-30°)
+  │       └─ camera_color_optical_frame  (rpy=-π/2 0 -π/2)
+-->
+<robot name="jackal_sim">
+
+  <!-- ================================================================
+       MATERIALS
+       ================================================================ -->
+  <material name="yellow">
+    <color rgba="0.9 0.75 0.0 1.0"/>
+  </material>
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="black">
+    <color rgba="0.05 0.05 0.05 1.0"/>
+  </material>
+
+  <!-- ================================================================
+       BASE FOOTPRINT (KDL 루트 링크 관성 경고 방지용 더미 링크)
+       ================================================================ -->
+  <link name="base_footprint"/>
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child  link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       BASE LINK  (로봇 본체 중심)
+       스폰 높이 z=0.13 → base_link 가 지면에서 0.13m
+       ================================================================ -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.508 0.430 0.178"/>
+      </geometry>
+      <material name="yellow"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.508 0.430 0.178"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="16.0"/>
+      <inertia ixx="0.30" ixy="0.0" ixz="0.0"
+               iyy="0.55" iyz="0.0" izz="0.70"/>
+    </inertial>
+  </link>
+
+  <!-- ================================================================
+       LEFT WHEEL
+       휠 반지름 = 0.098m → 휠 중심 z = 0.098m (지면 기준)
+       → base_link 기준: z = 0.098 - 0.13 = -0.032m
+       ================================================================ -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.098" length="0.060"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.098" length="0.060"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.0048" ixy="0.0" ixz="0.0"
+               iyy="0.0048" iyz="0.0" izz="0.0096"/>
+    </inertial>
+  </link>
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child  link="left_wheel"/>
+    <origin xyz="0.0 0.2175 -0.032" rpy="-1.5707963 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ================================================================
+       RIGHT WHEEL
+       ================================================================ -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.098" length="0.060"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.098" length="0.060"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.0048" ixy="0.0" ixz="0.0"
+               iyy="0.0048" iyz="0.0" izz="0.0096"/>
+    </inertial>
+  </link>
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child  link="right_wheel"/>
+    <origin xyz="0.0 -0.2175 -0.032" rpy="-1.5707963 0 0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ================================================================
+       FRONT CASTER  (캐스터 반지름=0.038m → 중심 z = 0.038m 지면 기준)
+       → base_link 기준: z = 0.038 - 0.13 = -0.092m
+       ================================================================ -->
+  <link name="front_caster">
+    <visual>
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.4"/>
+      <inertia ixx="0.00023" ixy="0.0" ixz="0.0"
+               iyy="0.00023" iyz="0.0" izz="0.00023"/>
+    </inertial>
+  </link>
+  <joint name="front_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="front_caster"/>
+    <origin xyz="0.22 0.0 -0.092" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       REAR CASTER
+       ================================================================ -->
+  <link name="rear_caster">
+    <visual>
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.4"/>
+      <inertia ixx="0.00023" ixy="0.0" ixz="0.0"
+               iyy="0.00023" iyz="0.0" izz="0.00023"/>
+    </inertial>
+  </link>
+  <joint name="rear_caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="rear_caster"/>
+    <origin xyz="-0.22 0.0 -0.092" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       2D LIDAR (LiDAR 센서 링크)
+       본체 상단 전방 → /scan 토픽 발행
+       ================================================================ -->
+  <link name="laser">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.04"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.2"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+  <joint name="laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="laser"/>
+    <origin xyz="0.18 0.0 0.109" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ================================================================
+       CAMERA LINK  (D435i 위치, 전방 하단에서 위쪽으로 30° 틸트)
+       틸트 이유: 태그가 벽 0.8m 높이, 카메라는 0.23m → 약 30° 위를 봐야 함
+       ================================================================ -->
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.090 0.025"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.090 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="camera_link"/>
+    <!-- pitch = -0.5236 rad (-30°): 카메라가 위쪽 30° 를 바라봄 -->
+    <origin xyz="0.24 0.0 0.10" rpy="0 -0.5236 0"/>
+  </joint>
+
+  <!-- ================================================================
+       CAMERA OPTICAL FRAME
+       ROS 광학 좌표 규약: x=오른쪽, y=아래쪽, z=앞쪽
+       camera_link (로봇 규약) → optical: rpy="-π/2 0 -π/2"
+       ================================================================ -->
+  <link name="camera_color_optical_frame"/>
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child  link="camera_color_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5707963 0 -1.5707963"/>
+  </joint>
+
+  <!-- ================================================================
+       GAZEBO PLUGINS
+       ================================================================ -->
+
+  <!-- 1) 차동 구동 (Differential Drive) -->
+  <gazebo>
+    <plugin name="jackal_diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <remapping>cmd_vel:=/cmd_vel</remapping>
+        <remapping>odom:=/odom</remapping>
+      </ros>
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.435</wheel_separation>
+      <wheel_diameter>0.196</wheel_diameter>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>1.0</max_wheel_acceleration>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+  <!-- 2) 2D LiDAR -->
+  <gazebo reference="laser">
+    <sensor type="ray" name="laser_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>20.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="laser_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=/scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>laser</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 3) RGB 카메라 (D435i color 시뮬레이션) -->
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="color_camera">
+      <update_rate>15.0</update_rate>
+      <camera name="color">
+        <!-- D435i 수평 FOV ≈ 69° → 1.2043 rad -->
+        <horizontal_fov>1.2043</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>50.0</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </camera>
+      <plugin name="color_camera_plugin" filename="libgazebo_ros_camera.so">
+        <ros>
+          <remapping>image_raw:=/camera/color/image_raw</remapping>
+          <remapping>camera_info:=/camera/color/camera_info</remapping>
+        </ros>
+        <camera_name>color</camera_name>
+        <frame_name>camera_color_optical_frame</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 바퀴 마찰 -->
+  <gazebo reference="left_wheel">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+  </gazebo>
+  <gazebo reference="right_wheel">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+  </gazebo>
+  <!-- 캐스터: 마찰 0 (자유 회전) -->
+  <gazebo reference="front_caster">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+  </gazebo>
+  <gazebo reference="rear_caster">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+  </gazebo>
+
+</robot>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  AprilTag 36h11 ID=0  (tag36_11_00000.png)
+  물리 크기: 0.162m x 0.162m x 0.001m (얇은 평판)
+  텍스처 이미지는 scripts/setup_apriltag_textures.sh 로 다운로드.
+-->
+<sdf version="1.6">
+  <model name="apriltag_36h11_0">
+    <static>true</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.162 0.162 0.001</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://apriltag_36h11_0/materials/scripts</uri>
+            <uri>model://apriltag_36h11_0/materials/textures</uri>
+            <name>AprilTag36h11_0</name>
+          </script>
+        </material>
+      </visual>
+      <!-- 충돌체 제거: 태그는 얇아서 충돌 무시 -->
+    </link>
+  </model>
+</sdf>

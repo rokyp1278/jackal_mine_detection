@@ -1,0 +1,135 @@
+# =====================================================================
+# params.yaml  — jackal_mine_detection 전체 노드 파라미터
+# 단계별 설명:
+#   1단계: fake_mine_publisher_node + mine_cluster_node + exploration_manager + mine_goal_sender
+#   2단계: mine_recorder_node 추가 (fake_mine 대체)
+#   3단계: waypoint_follower_node 추가 (자율 탐사)
+# =====================================================================
+
+# ─────────────────────────────────────────────────────────────────────
+# [1단계] 가짜 지뢰 발행 노드
+# ─────────────────────────────────────────────────────────────────────
+fake_mine_publisher_node:
+  ros__parameters:
+    use_sim_time: true
+    publish_rate: 1.0
+    frame_id: "map"
+    # x1,y1,z1, x2,y2,z2, ... (1차원 flat 배열, 3개씩 끊어 사용)
+    # 클러스터 3개(x≈3.0, y≈1.0) + 단독 1개(x≈8.0, y≈-1.0)
+    fake_mines:
+      - 3.0
+      - 1.0
+      - 0.0
+      - 3.2
+      - 1.1
+      - 0.0
+      - 2.8
+      - 0.9
+      - 0.0
+      - 8.0
+      - -1.0
+      - 0.0
+
+# ─────────────────────────────────────────────────────────────────────
+# [1~4단계] 군집 계산 노드
+# ─────────────────────────────────────────────────────────────────────
+mine_cluster_node:
+  ros__parameters:
+    use_sim_time: true
+    cluster_radius: 1.0       # [m] 이 반경 안에 있으면 같은 클러스터
+    min_cluster_size: 2       # 최소 클러스터 구성 개수
+    update_rate: 1.0          # [Hz]
+    method: "radius_count"    # "radius_count" | "dbscan"
+    marker_frame: "map"
+
+# ─────────────────────────────────────────────────────────────────────
+# [1~4단계] 탐사 상태 관리 노드
+# ─────────────────────────────────────────────────────────────────────
+exploration_manager_node:
+  ros__parameters:
+    use_sim_time: true
+    exploration_timeout_sec: 300.0   # 자율 탐사 완료까지 대기 (waypoint 끝나면 /finish_exploration 발행)
+    finish_topic: "/finish_exploration"
+    state_topic:  "/exploration_state"
+    trigger_topic: "/trigger_final_goal"
+    publish_rate: 1.0
+
+# ─────────────────────────────────────────────────────────────────────
+# [1~4단계] 최종 goal 전송 노드
+# ─────────────────────────────────────────────────────────────────────
+mine_goal_sender_node:
+  ros__parameters:
+    use_sim_time: true
+    nav2_action: "navigate_to_pose"
+    goal_resend_threshold: 0.5    # [m] 이 거리 미만이면 재전송 안 함
+    approach_offset: 1.5          # [m] 동쪽 접근: gx=cx+offset → (4.5, 0.0), x=3 SLAM 노이즈 회피
+    goal_yaw_mode: "face_center"  # "face_center" | "keep_zero"
+    cluster_topic: "/mine_cluster_center"
+    trigger_topic: "/trigger_final_goal"
+    robot_frame: "base_link"
+
+# ─────────────────────────────────────────────────────────────────────
+# [2~4단계] AprilTag → map 좌표 변환 및 저장 노드
+# ─────────────────────────────────────────────────────────────────────
+mine_recorder_node:
+  ros__parameters:
+    use_sim_time: true
+    map_frame: "map"
+    # 실제 Jackal + NX: 카메라 frame 이름 확인 필요
+    camera_frame: "camera_color_optical_frame"
+    duplicate_distance: 0.3      # [m] 거리 기반 중복 제거 임계값
+    use_tag_id_dedup: true       # true: tag_id 우선 / false: 거리 기반
+    csv_path: "/tmp/mine_positions.csv"
+    marker_scale: 0.2
+    marker_lifetime_sec: 0.0     # 0 = 영구 표시
+    tf_timeout_sec: 0.5
+    publish_rate: 2.0
+
+# ─────────────────────────────────────────────────────────────────────
+# [4단계] Frontier 자율 탐사 노드 (waypoint_follower_node 대체)
+# ─────────────────────────────────────────────────────────────────────
+frontier_explorer_node:
+  ros__parameters:
+    use_sim_time: true
+    nav2_action: "navigate_to_pose"
+    min_frontier_size: 8            # 군집 최소 셀 수 (작으면 노이즈 frontier 제거)
+    frontier_check_rate: 0.5        # [Hz] frontier 탐색 주기
+    goal_timeout_sec: 60.0          # 단일 goal 최대 대기 시간
+    exploration_timeout_sec: 300.0  # 전체 탐사 최대 시간
+    no_frontier_limit: 5            # 연속 frontier 없음 횟수 → 탐사 완료 판단
+    start_delay_sec: 5.0            # Nav2 완전 기동 추가 대기
+    map_frame: "map"
+    base_frame: "base_link"
+    blacklist_radius_m: 0.8         # ABORTED된 goal 주변 이 거리 이내는 재시도 안 함
+    max_goal_dist_m: 3.0            # frontier가 이 거리보다 멀면 중간 지점으로 분할 이동
+
+# ─────────────────────────────────────────────────────────────────────
+# [3단계] Waypoint 자율 탐사 노드 (하드코딩 waypoint — frontier로 대체됨)
+# ─────────────────────────────────────────────────────────────────────
+waypoint_follower_node:
+  ros__parameters:
+    use_sim_time: true
+    nav2_action: "navigate_to_pose"
+    waypoint_timeout_sec: 120.0
+    map_frame: "map"
+    auto_start: true
+    start_delay_sec: 5.0      # Nav2 완전 기동 대기 (초)
+    # Waypoint: [x, y, yaw_rad] 3개씩 (1차원 flat 배열)
+    # mine_detection.world 복도 기준:
+    #   WP1: (3.0,  0.5, π/2)  → 북쪽 태그 클러스터를 바라봄
+    #   WP2: (6.0,  0.0, 0.0)  → 복도 중간 통과
+    #   WP3: (8.0, -0.5, -π/2) → 남쪽 단독 태그를 바라봄
+    #   WP4: (10.0, 0.0, π)    → 복도 끝
+    waypoints:
+      - 3.0
+      - 0.5
+      - 1.5708
+      - 6.0
+      - 0.0
+      - 0.0
+      - 8.0
+      - -0.5
+      - -1.5708
+      - 10.0
+      - 0.0
+      - 3.1416

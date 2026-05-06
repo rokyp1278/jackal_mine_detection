@@ -1,0 +1,151 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Width: 320
+  - Class: rviz_common/Tool Properties
+    Name: Tool Properties
+  - Class: rviz_common/Views
+    Name: Views
+
+Visualization Manager:
+  Class: ""
+  Displays:
+    # ── 기본 환경 ──────────────────────────────────────────────────
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Reference Frame: map
+      Plane Cell Count: 20
+      Cell Size: 1
+
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: false
+      Show Names: true
+      Show Arrows: false
+
+    # ── SLAM Map ───────────────────────────────────────────────────
+    - Class: rviz_default_plugins/Map
+      Name: Map (SLAM)
+      Topic:
+        Value: /map
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+      Enabled: true
+      Alpha: 0.7
+
+    # ── 로봇 ──────────────────────────────────────────────────────
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Topic:
+        Value: /robot_description
+
+    # ── LiDAR ─────────────────────────────────────────────────────
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Topic:
+        Value: /scan
+      Enabled: true
+      Size (m): 0.04
+      Color: 0; 170; 255
+
+    # ── Nav2 ──────────────────────────────────────────────────────
+    - Class: rviz_default_plugins/Path
+      Name: GlobalPath
+      Topic:
+        Value: /plan
+      Enabled: true
+      Color: 0; 255; 0
+      Line Style: Lines
+      Line Width: 0.02
+
+    - Class: nav2_rviz_plugins/Costmap
+      Name: LocalCostmap
+      Topic:
+        Value: /local_costmap/costmap
+      Enabled: false
+      Alpha: 0.3
+
+    # ── AprilTag 카메라 이미지 ─────────────────────────────────────
+    - Class: rviz_default_plugins/Image
+      Name: CameraImage
+      Topic:
+        Value: /camera/color/image_raw
+      Enabled: false
+
+    # ── Mine Markers ───────────────────────────────────────────────
+    - Class: rviz_default_plugins/MarkerArray
+      Name: MineMarkers
+      Topic:
+        Value: /mine_markers
+      Enabled: true
+
+    - Class: rviz_default_plugins/PoseArray
+      Name: MinePositions
+      Topic:
+        Value: /mine_positions
+      Enabled: true
+      Color: 255; 80; 0
+      Shaft Length: 0.3
+      Head Length: 0.1
+
+    # ── Cluster ────────────────────────────────────────────────────
+    - Class: rviz_default_plugins/Marker
+      Name: ClusterMarker
+      Topic:
+        Value: /mine_cluster_marker
+      Enabled: true
+
+    - Class: rviz_default_plugins/Pose
+      Name: ClusterCenter
+      Topic:
+        Value: /mine_cluster_center
+      Enabled: true
+      Color: 0; 200; 255
+      Shaft Length: 0.5
+      Head Length: 0.2
+      Shaft Radius: 0.02
+      Head Radius: 0.05
+
+    # ── Waypoint Exploration ───────────────────────────────────────
+    - Class: rviz_default_plugins/Marker
+      Name: WaypointMarker
+      Topic:
+        Value: /current_waypoint_marker
+      Enabled: true
+
+  Global Options:
+    Background Color: 40; 40; 40
+    Fixed Frame: map
+    Frame Rate: 30
+
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/SetGoal
+      Topic:
+        Value: /goal_pose
+    - Class: rviz_default_plugins/PublishPoint
+      Topic:
+        Value: /clicked_point
+  Value: true
+
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 14
+      Focal Point:
+        X: 5.0
+        Y: 0.0
+        Z: 0.0
+      Pitch: 0.65
+      Yaw: 1.2
+
+Window Geometry:
+  Height: 900
+  Width: 1500
+  X: 50
+  Y: 50

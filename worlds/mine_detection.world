@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<!--
+  mine_detection.world
+  ======================================================================
+  Jackal Mine Detection 전용 Gazebo Classic (Gazebo 11) 실내 복도 환경.
+
+  환경 구조:
+    - 12m × 3m 직선 복도 (x: 0~12, y: -1.5~1.5, 높이 2.5m)
+    - 북쪽 벽 (y = +1.5): AprilTag 0, 1, 2 클러스터  (x ≈ 3.0 근방)
+    - 남쪽 벽 (y = -1.5): AprilTag 3 단독            (x ≈ 8.0)
+    - Jackal 시작 위치: (0.5, 0.0, 0.0)
+
+  AprilTag 배치 (tag_size = 0.162m):
+    Tag 0: (3.0,  1.45, 0.8) → 북쪽 벽 부착, 남향(카메라 방향 facing -y)
+    Tag 1: (3.3,  1.45, 0.8) → 북쪽 벽, 클러스터
+    Tag 2: (2.7,  1.45, 0.8) → 북쪽 벽, 클러스터
+    Tag 3: (8.0, -1.45, 0.8) → 남쪽 벽 부착, 북향(facing +y)
+
+  Waypoint 탐사 경로 (params.yaml 참고):
+    WP1 (3.0,  0.5,  90°) → 북쪽 태그 클러스터를 바라보며 정지
+    WP2 (6.0,  0.0,   0°) → 복도 중간 통과
+    WP3 (8.0, -0.5, -90°) → 남쪽 태그를 바라보며 정지
+    WP4 (10.0, 0.0, 180°) → 복도 끝 도달
+
+  ※ AprilTag 모델이 텍스처 이미지를 필요로 합니다.
+     scripts/setup_apriltag_textures.sh 를 실행하여 PNG를 다운로드하세요.
+  ======================================================================
+-->
+<sdf version="1.6">
+  <world name="mine_detection_world">
+
+    <!-- ── 물리 설정 ─────────────────────────────────────────────── -->
+    <!-- gazebo_ros_init / gazebo_ros_factory 는 gazebo_ros launch 가
+         -s 플래그로 서버 플러그인으로 로드하므로 여기서 중복 선언하지 않음 -->
+    <physics name="default_physics" default="0" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <gravity>0 0 -9.8</gravity>
+    </physics>
+
+    <!-- ── 조명 ──────────────────────────────────────────────────── -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- 실내 분위기를 위한 추가 포인트 라이트 -->
+    <light type="point" name="indoor_light_1">
+      <pose>4 0 2.3 0 0 0</pose>
+      <diffuse>0.8 0.8 0.7 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>8</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+    <light type="point" name="indoor_light_2">
+      <pose>9 0 2.3 0 0 0</pose>
+      <diffuse>0.8 0.8 0.7 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <attenuation>
+        <range>8</range>
+        <constant>0.5</constant>
+        <linear>0.1</linear>
+        <quadratic>0.05</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+
+    <!-- ── 바닥 ──────────────────────────────────────────────────── -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- ── 북쪽 벽 (y = 1.5) ──────────────────────────────────────── -->
+    <model name="north_wall">
+      <static>true</static>
+      <pose>5.5 1.55 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12.1 0.1 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12.1 0.1 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── 남쪽 벽 (y = -1.5) ─────────────────────────────────────── -->
+    <model name="south_wall">
+      <static>true</static>
+      <pose>5.5 -1.55 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>12.1 0.1 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>12.1 0.1 2.5</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.85 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── 서쪽 벽 (x = 0) ────────────────────────────────────────── -->
+    <model name="west_wall">
+      <static>true</static>
+      <pose>-0.05 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 3.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 3.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── 동쪽 벽 (x = 12) ───────────────────────────────────────── -->
+    <model name="east_wall">
+      <static>true</static>
+      <pose>12.05 0 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 3.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 3.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── 천장 ──────────────────────────────────────────────────── -->
+    <model name="ceiling">
+      <static>true</static>
+      <pose>5.5 0 2.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>12 3.1 0.05</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         AprilTag 모델 배치
+         태그 모델은 기본 XY 평면 (normal = +Z) 으로 제작됨.
+         roll 회전으로 방향 조정:
+           북쪽 벽 부착, 남향(facing -Y): roll = -1.5707963 (= -π/2)
+           남쪽 벽 부착, 북향(facing +Y): roll =  1.5707963 (= +π/2)
+         ================================================================ -->
+
+    <!-- Tag 0: 북쪽 벽, x=3.0 (클러스터 중심) -->
+    <include>
+      <uri>model://apriltag_36h11_0</uri>
+      <name>apriltag_0</name>
+      <pose>3.0 1.45 0.8 -1.5707963 0 0</pose>
+    </include>
+
+    <!-- Tag 1: 북쪽 벽, x=3.3 (클러스터) -->
+    <include>
+      <uri>model://apriltag_36h11_1</uri>
+      <name>apriltag_1</name>
+      <pose>3.3 1.45 0.8 -1.5707963 0 0</pose>
+    </include>
+
+    <!-- Tag 2: 북쪽 벽, x=2.7 (클러스터) -->
+    <include>
+      <uri>model://apriltag_36h11_2</uri>
+      <name>apriltag_2</name>
+      <pose>2.7 1.45 0.8 -1.5707963 0 0</pose>
+    </include>
+
+    <!-- Tag 3: 남쪽 벽, x=8.0 (단독) -->
+    <include>
+      <uri>model://apriltag_36h11_3</uri>
+      <name>apriltag_3</name>
+      <pose>8.0 -1.45 0.8 1.5707963 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
