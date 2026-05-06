@@ -2,6 +2,51 @@
 
 ROS2 Humble 기반 Jackal UGV 실내 지뢰(AprilTag) 자율 탐지 시스템.
 
+---
+
+## 팀 개발 환경 설정 (에일리언 노트북 / Ubuntu 22.04)
+
+### 처음 한 번만 — 전체 설치
+
+```bash
+git clone https://github.com/rokyp1278/jackal_mine_detection.git
+cd jackal_mine_detection/scripts
+bash setup_alienware.sh
+```
+
+ROS2 Humble + 시뮬레이션 패키지 + 빌드 + SSH 서버 + tmux 설정까지 자동으로 됩니다.
+
+### 매일 작업 시작할 때 — tmux 협업 세션
+
+```bash
+bash ~/ros2_ws/src/jackal_mine_detection/scripts/start_collab.sh
+```
+
+### 팀원 접속 방법 (SSH)
+
+```bash
+# 에일리언 노트북 IP 확인 (노트북에서)
+hostname -I
+
+# 팀원 PC에서 SSH 접속
+ssh 사용자이름@노트북IP
+
+# tmux 세션 참가 (접속 후)
+tmux attach -t jackal
+```
+
+### tmux 단축키
+
+| 키 | 동작 |
+|---|---|
+| `Ctrl+b` → `1` | SIM 창 (Gazebo + 파이프라인) |
+| `Ctrl+b` → `2` | DEV 창 (코드 편집 + 빌드) |
+| `Ctrl+b` → 방향키 | 창 내 pane 이동 |
+| `Ctrl+b` → `[` | 스크롤 모드 (`q`로 나가기) |
+| `Ctrl+b` → `d` | 세션 나가기 (세션은 유지됨) |
+
+---
+
 ## 현재 상태 (2026-05-06 기준)
 
 | 단계 | 내용 | 상태 |

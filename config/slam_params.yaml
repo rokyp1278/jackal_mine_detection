@@ -39,7 +39,7 @@ slam_toolbox:
     minimum_travel_heading: 0.5      # [rad]
     scan_buffer_size: 10
     scan_buffer_maximum_scan_distance: 10.0
-    min_laser_range: 0.1
+    min_laser_range: 0.35    # 로봇 본체(폭 0.43m) 자기 몸 스캔 방지
     max_laser_range: 20.0
 
     # ── TF ───────────────────────────────────────────────────────
