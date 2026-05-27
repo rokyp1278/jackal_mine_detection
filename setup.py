@@ -15,11 +15,16 @@ for top_dir in ('launch', 'config', 'worlds', 'models', 'scripts', 'urdf'):
     for root, dirs, files in os.walk(top_dir):
         # __pycache__ 제외
         dirs[:] = [d for d in dirs if d != '__pycache__']
-        if files:
+        # 실제로 존재하는 일반 파일만 포함 (심볼릭 링크 깨진 파일 제외)
+        valid_files = [
+            os.path.join(root, f) for f in files
+            if os.path.isfile(os.path.join(root, f))
+        ]
+        if valid_files:
             rel = os.path.relpath(root, '.')
             data_files.append((
                 os.path.join('share', package_name, rel),
-                [os.path.join(root, f) for f in files],
+                valid_files,
             ))
 
 setup(

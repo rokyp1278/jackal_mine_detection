@@ -13,13 +13,13 @@ RealSense 앞/뒤 카메라로 YOLO AprilTag 탐지 → confidence 발행
   /tag_bbox        (std_msgs/String)   — JSON: {camera, conf, cx, cy, w, h} (디버그용)
 """
 
+import os
+import json
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32, Bool, String
 from cv_bridge import CvBridge
-import json
-import os
 
 
 class TagYoloDetectorNode(Node):
@@ -27,7 +27,16 @@ class TagYoloDetectorNode(Node):
         super().__init__('tag_yolo_detector_node')
 
         # ── 파라미터 ──────────────────────────────────────────────
-        self.declare_parameter('model_path', 'models/apriltag_yolo.pt')
+        # 기본값: 패키지 share 디렉토리의 models 폴더
+        try:
+            from ament_index_python.packages import get_package_share_directory
+            _default_model = os.path.join(
+                get_package_share_directory('jackal_mine_detection'),
+                'models', 'apriltag_yolo.pt')
+        except Exception:
+            _default_model = os.path.expanduser(
+                '~/ros2_ws/src/jackal_mine_detection/models/apriltag_yolo.pt')
+        self.declare_parameter('model_path', _default_model)
         self.declare_parameter('confidence_threshold', 0.55)
         self.declare_parameter('front_topic', '/camera_front/color/image_raw')
         self.declare_parameter('rear_topic',  '/camera_rear/color/image_raw')
