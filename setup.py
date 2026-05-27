@@ -45,6 +45,8 @@ setup(
             'sim_apriltag_detector_node   = jackal_mine_detection.sim_apriltag_detector_node:main',
             'sim_mine_detector_node       = jackal_mine_detection.sim_mine_detector_node:main',
             'frontier_explorer_node       = jackal_mine_detection.frontier_explorer_node:main',
+            'tag_yolo_detector_node       = jackal_mine_detection.tag_yolo_detector_node:main',
+            'tag_recorder_node            = jackal_mine_detection.tag_recorder_node:main',
         ],
     },
 )
