@@ -52,6 +52,7 @@ setup(
             'frontier_explorer_node       = jackal_mine_detection.frontier_explorer_node:main',
             'tag_yolo_detector_node       = jackal_mine_detection.tag_yolo_detector_node:main',
             'tag_recorder_node            = jackal_mine_detection.tag_recorder_node:main',
+            'automatic_driving_node       = jackal_mine_detection.automatic_driving_node:main',
         ],
     },
 )
